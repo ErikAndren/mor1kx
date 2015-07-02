@@ -206,6 +206,16 @@ module mor1kx_lsu_cappuccino
    wire 			     snoop_valid;
    wire 			     dc_snoop_hit;
 
+   // Bus access logic
+   localparam [2:0]
+     IDLE		= 3'd0,
+     READ		= 3'd1,
+     WRITE		= 3'd2,
+     TLB_RELOAD		= 3'd3,
+     DC_REFILL		= 3'd4;
+
+   reg [2:0] state;
+
    // We have to mask out our snooped bus accesses
    assign snoop_valid = (OPTION_DCACHE_SNOOP != "NONE") ?
                         snoop_en_i & !((snoop_adr_i == dbus_adr_o) & dbus_ack_i) :
@@ -346,15 +356,6 @@ module mor1kx_lsu_cappuccino
 
    assign lsu_result_o = dbus_dat_extended;
 
-   // Bus access logic
-   localparam [2:0]
-     IDLE		= 3'd0,
-     READ		= 3'd1,
-     WRITE		= 3'd2,
-     TLB_RELOAD		= 3'd3,
-     DC_REFILL		= 3'd4;
-
-   reg [2:0] state;
 
    assign dbus_access = (!dc_access | tlb_reload_busy | ctrl_op_lsu_store_i) &
 			(state != DC_REFILL) | (state == WRITE);
